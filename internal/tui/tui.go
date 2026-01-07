@@ -10,6 +10,11 @@ import (
 )
 
 var (
+	headerStyle   = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("69"))
+	idStyle       = lipgloss.NewStyle().Foreground(lipgloss.Color("241"))
+	urlStyle      = lipgloss.NewStyle().Foreground(lipgloss.Color("252"))
+	selectedStyle = lipgloss.NewStyle().Bold(true)
+
 	titleStyle  = lipgloss.NewStyle().Bold(true)
 	selectedRow = lipgloss.NewStyle().Foreground(lipgloss.Color("11"))
 	statusIdle  = lipgloss.NewStyle().Foreground(lipgloss.Color("240"))
@@ -51,4 +56,19 @@ func InitialModel() Model {
 
 func (m Model) Init() tea.Cmd {
 	return nil
+}
+
+func renderStatus(s JobStatus) string {
+	switch s {
+	case Idle:
+		return statusIdle.Render(" IDLE ")
+	case Running:
+		return statusRun.Render(" RUN ")
+	case Done:
+		return statusDone.Render(" DONE ")
+	case Error:
+		return statusError.Render(" ERR ")
+	default:
+		return " ??? "
+	}
 }

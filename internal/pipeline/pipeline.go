@@ -118,11 +118,22 @@ func Run(ctx context.Context, opt Options, log LogFn) (*Result, error) {
 
 	switch opt.Backend {
 	case BackendWhisperCPP:
-		text, err := whisperCPP(ctx, opt, wavPath, title, log)
-		if err != nil {
-			return nil, err
+		resCh := make(chan whisperResult, 1)
+
+		whisperQueue <- whisperTask{
+			ctx:    ctx,
+			opt:    opt,
+			wav:    wavPath,
+			title:  title,
+			log:    log,
+			result: resCh,
 		}
-		return &Result{Title: title, Text: text}, nil
+
+		res := <-resCh
+		if res.err != nil {
+			return nil, res.err
+		}
+		return &Result{Title: title, Text: res.text}, nil
 
 	case BackendOpenAI:
 		return nil, errors.New("openai backend: not implemented in this step (next step we’ll add API call)")

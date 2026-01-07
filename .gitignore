@@ -1,5 +1,7 @@
 *.bin
 ext-tools
 out
-*.h2.db
+*.db
 *.log
+audio
+ytb

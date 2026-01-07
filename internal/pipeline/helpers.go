@@ -1,8 +1,10 @@
 package pipeline
 
 import (
+	"fmt"
 	"os"
 	"strings"
+	"time"
 )
 
 func normalizeURL(s string) string {
@@ -34,5 +36,5 @@ func CreateFileNameForSave(s string) string {
 	if len(s) > 120 {
 		s = s[:120]
 	}
-	return s
+	return s + fmt.Sprintf("_%d", time.Now().UnixNano())
 }

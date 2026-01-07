@@ -87,4 +87,7 @@ type Model struct {
 	InputURL string
 
 	jobCh map[int]chan tea.Msg
+
+	Width  int
+	Height int
 }

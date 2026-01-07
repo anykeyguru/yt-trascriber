@@ -5,7 +5,6 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"time"
 
 	"github.com/anykeyguru/yt-trascriber/internal/helpers"
 	"github.com/anykeyguru/yt-trascriber/internal/pipeline"
@@ -33,6 +32,10 @@ type deleteDoneMsg struct {
 // Update processes incoming messages to modify the state of the model and potentially produce new commands for execution.
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
+	case tea.WindowSizeMsg:
+		m.Width = msg.Width
+		m.Height = msg.Height
+		return m, nil
 
 	case tea.KeyMsg:
 		if m.InputMode == InputURL {
@@ -250,8 +253,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if m.Jobs[i].ID == msg.jobID {
 				m.Jobs[i].Logs = append(m.Jobs[i].Logs, msg.line)
 				// удерживаем последние N строк, чтобы память не росла
-				if len(m.Jobs[i].Logs) > 300 {
-					m.Jobs[i].Logs = m.Jobs[i].Logs[len(m.Jobs[i].Logs)-300:]
+				if len(m.Jobs[i].Logs) > 10 {
+					m.Jobs[i].Logs = m.Jobs[i].Logs[len(m.Jobs[i].Logs)-10:]
 				}
 				break
 			}
@@ -274,15 +277,15 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					m.Jobs[i].Logs = append(m.Jobs[i].Logs, "done: "+msg.title)
 					// пока просто положим текст в logs хвостом (или добавь поле Job.Text)
 					if strings.TrimSpace(msg.text) != "" {
-						m.Jobs[i].Logs = append(m.Jobs[i].Logs, "----- transcript (first 20 lines) -----")
+						m.Jobs[i].Logs = append(m.Jobs[i].Logs, "----- transcript (first 10 lines) -----")
 						lines := strings.Split(msg.text, "\n")
-						for k := 0; k < len(lines) && k < 20; k++ {
+						for k := 0; k < len(lines) && k < 10; k++ {
 							m.Jobs[i].Logs = append(m.Jobs[i].Logs, lines[k])
 						}
 					}
 				}
 				if err := m.Store.Save(storage.Transcript{
-					Title:   msg.title + fmt.Sprintf("_%d", time.Now().UnixNano()),
+					Title:   msg.title,
 					URL:     m.Jobs[i].URL,
 					Backend: m.Jobs[i].Backend,
 					Text:    msg.text,
