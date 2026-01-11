@@ -11,4 +11,8 @@ type AppConfig struct {
 
 	OpenAIKey   string
 	OpenAIModel string
+
+	Version string
+	Commit  string
+	Date    string
 }

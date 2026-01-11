@@ -2,7 +2,10 @@ package main
 
 import (
 	"context"
+	"flag"
+	"fmt"
 	"log"
+	"os"
 
 	"github.com/anykeyguru/yt-trascriber/internal/config"
 	"github.com/anykeyguru/yt-trascriber/internal/pipeline"
@@ -10,20 +13,28 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
+var (
+	AppName = "ytranscribe"
+	Version = "dev"
+	Commit  = "none"
+	Date    = "unknown"
+)
+
 func init() {
 	pipeline.NewYtDl()
 }
 func main() {
-
-	cfg := config.AppConfig{
-		OutDir:       pipeline.DefaultOutDir,
-		Language:     "ru",
-		YtDlpPath:    "yt-dlp",
-		FfmpegPath:   "ffmpeg",
-		WhisperBin:   "./ext-tools/whisper/whisper-cli",
-		WhisperModel: "./models/ggml-medium.bin",
-		OpenAIModel:  "gpt-4o-transcribe",
+	showVersion := flag.Bool("version", false, "Print version and exit")
+	flag.Parse()
+	if *showVersion {
+		fmt.Printf(
+			"[%s] %s\ncommit: %s\nbuild:  %s\n",
+			AppName, Version, Commit, Date,
+		)
+		os.Exit(0)
 	}
+
+	cfg := config.MustLoad(config.AppInfo{Version: Version, Commit: Commit, Date: Date})
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 

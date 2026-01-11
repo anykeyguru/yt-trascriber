@@ -1,7 +1,8 @@
 *.bin
-ext-tools
+ext-tools/*
 out
 *.db
 *.log
 audio
 ytb
+config.yaml

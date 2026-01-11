@@ -26,7 +26,7 @@ func (m Model) jobsView() string {
 
 	var b strings.Builder
 
-	b.WriteString(titleStyle.Render("ytranscribe — Jobs\n\n"))
+	b.WriteString(titleStyle.Render("ytranscribe — Jobs.  Ver." + m.Cfg.Version + "\n\n"))
 	b.WriteString(fmt.Sprintf(
 		"Backend: %s   (b = switch)   Jobs: %d\n\n",
 		m.Backend,
@@ -144,7 +144,7 @@ func (m Model) jobsMP3View() string {
 
 	var b strings.Builder
 
-	b.WriteString(titleStyle.Render("ytranscribe — Jobs\n\n"))
+	b.WriteString(titleStyle.Render("ytranscribe — Jobs.  Ver." + m.Cfg.Version + "\n\n"))
 	b.WriteString("MP3 Grubber")
 
 	b.WriteString(m.divider())

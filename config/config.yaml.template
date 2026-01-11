@@ -1,0 +1,18 @@
+textoutput: ./out
+
+youtube:
+  ytdlpath: yt-dlp
+
+ffmpeg:
+  path
+
+trunscriber:
+    language: auto
+    whisper:
+        cli: ./ext-tools/whisper/whisper-cli
+        model: ./models/ggml-medium.bin
+    openai:
+      model: gpt-4o-transcribe
+      temperature: 0.5
+      token: dfgsdfgsdfgsdfgsdf
+
