@@ -43,7 +43,7 @@ You can com result `./build/bin/whisper-cli` to the project path `<project dir>/
 cp ./build/bin/whisper-cli <project dir>/ext-tools/whisper/whisper-cli
 ```
 ## ytdlp and ffmpeg
-Will be installed by instructions.
+You must install by instructions.
 - [yt-dlp](https://github.com/yt-dlp/yt-dlp/wiki/Installation)
 - [whisper.cpp](https://github.com/ggml-org/whisper.cpp)
 
