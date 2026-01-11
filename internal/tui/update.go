@@ -139,6 +139,10 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				if m.Selected > 0 {
 					m.Selected--
 				}
+			case ViewMP3:
+				if m.Selected > 0 {
+					m.Selected--
+				}
 			}
 
 		case "down":
@@ -151,19 +155,29 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				if m.Selected < len(m.History)-1 {
 					m.Selected++
 				}
+			case ViewMP3:
+				if m.Selected < len(m.History)-1 {
+					m.Selected++
+				}
 			}
 
 		case "b":
 			if m.ViewMode == ViewJobs && m.InputMode == InputNone {
-				if m.Backend == "whisper.cpp" {
-					m.Backend = "openai"
+				if m.Backend == pipeline.BackendWhisperCPP {
+					m.Backend = pipeline.BackendOpenAI
 				} else {
-					m.Backend = "whisper.cpp"
+					m.Backend = pipeline.BackendWhisperCPP
 				}
 			}
 
 		case "a":
 			if m.ViewMode == ViewJobs && m.InputMode == InputNone {
+				m.InputURL = ""
+				m.InputMode = InputURL
+				m.Message = "Enter YouTube URL (press Enter)"
+			}
+
+			if m.ViewMode == ViewMP3 && m.InputMode == InputNone {
 				m.InputURL = ""
 				m.InputMode = InputURL
 				m.Message = "Enter YouTube URL (press Enter)"
@@ -177,6 +191,24 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 			if m.ViewMode == ViewJobs {
 				m.ViewMode = ViewHistory
+				if m.Selected >= len(m.History) {
+					m.Selected = max(len(m.History)-1, 0)
+				}
+			} else {
+				m.ViewMode = ViewJobs
+				if m.Selected >= len(m.Jobs) {
+					m.Selected = max(len(m.Jobs)-1, 0)
+				}
+			}
+
+		case "m":
+			m.InputMode = InputNone
+			m.InputPath = ""
+			m.InputURL = ""
+			m.Message = ""
+
+			if m.ViewMode == ViewJobs {
+				m.ViewMode = ViewMP3
 				if m.Selected >= len(m.History) {
 					m.Selected = max(len(m.History)-1, 0)
 				}
@@ -211,6 +243,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 
 		case "enter":
+			// transcribing
 			if m.ViewMode == ViewJobs && len(m.Jobs) > 0 {
 				job := &m.Jobs[m.Selected]
 
@@ -230,6 +263,25 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				}
 			}
 
+			// mp3 grub
+			if m.ViewMode == ViewMP3 && len(m.Jobs) > 0 {
+				job := &m.Jobs[m.Selected]
+
+				if job.Status == Idle {
+					job.Status = Running
+
+					ch := make(chan tea.Msg, 200)
+					m.jobCh[job.ID] = ch
+
+					return m, runPipelineJob(
+						job.ID,
+						job.URL,
+						pipeline.BackendFFMPEG,
+						m.Cfg,
+						ch,
+					)
+				}
+			}
 		}
 
 	case deleteDoneMsg:
@@ -287,7 +339,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				if err := m.Store.Save(storage.Transcript{
 					Title:   msg.title,
 					URL:     m.Jobs[i].URL,
-					Backend: m.Jobs[i].Backend,
+					Backend: m.Jobs[i].Backend.String(),
 					Text:    msg.text,
 				}); err != nil {
 					m.Message = "Save failed: " + err.Error()

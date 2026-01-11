@@ -23,7 +23,8 @@ func (yt *YtDl) GetTitle(ctx context.Context, opt Options, log LogFn) (string, e
 		log(string(out))
 		return "", fmt.Errorf("yt-dlp title: %w", err)
 	}
-	return strings.TrimSpace(string(out)), nil
+
+	return Sanitize(string(out)), nil
 }
 
 func (yt *YtDl) FetchAudio(ctx context.Context, opt Options, tmpDir string, log LogFn) (string, error) {

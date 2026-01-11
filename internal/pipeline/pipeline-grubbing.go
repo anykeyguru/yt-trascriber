@@ -18,7 +18,15 @@ type Backend string
 const (
 	BackendWhisperCPP Backend = "whisper.cpp"
 	BackendOpenAI     Backend = "openai"
+	BackendFFMPEG     Backend = "ffmpeg"
+	defaultYtDlpPath          = "yt-dlp"
+	defaultFfmpegPath         = "ffmpeg"
+	DefaultOutDir             = "./out"
 )
+
+func (b Backend) String() string {
+	return string(b)
+}
 
 type Options struct {
 	URL      string
@@ -47,7 +55,7 @@ type Result struct {
 
 type LogFn func(line string)
 
-func Run(ctx context.Context, opt Options, log LogFn) (*Result, error) {
+func RunGrubTExtFromYTb(ctx context.Context, opt Options, log LogFn) (*Result, error) {
 	opt.URL = normalizeURL(opt.URL)
 
 	if opt.URL == "" {
@@ -63,13 +71,13 @@ func Run(ctx context.Context, opt Options, log LogFn) (*Result, error) {
 		opt.Timeout = 60 * time.Minute
 	}
 	if opt.YtDlpPath == "" {
-		opt.YtDlpPath = "yt-dlp"
+		opt.YtDlpPath = defaultYtDlpPath
 	}
 	if opt.FfmpegPath == "" {
-		opt.FfmpegPath = "ffmpeg"
+		opt.FfmpegPath = defaultFfmpegPath
 	}
 	if opt.OutDir == "" {
-		opt.OutDir = "./out"
+		opt.OutDir = DefaultOutDir
 	}
 
 	ctx, cancel := context.WithTimeout(ctx, opt.Timeout)

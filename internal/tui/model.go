@@ -3,22 +3,11 @@ package tui
 import (
 	"time"
 
+	"github.com/anykeyguru/yt-trascriber/internal/config"
+	"github.com/anykeyguru/yt-trascriber/internal/pipeline"
 	"github.com/anykeyguru/yt-trascriber/internal/storage"
 	tea "github.com/charmbracelet/bubbletea"
 )
-
-type AppConfig struct {
-	OutDir         string
-	CustomPathSave string
-	Language       string
-	YtDlpPath      string
-	FfmpegPath     string
-	WhisperBin     string
-	WhisperModel   string
-
-	OpenAIKey   string
-	OpenAIModel string
-}
 
 type JobStatus int
 
@@ -47,7 +36,7 @@ func (s JobStatus) String() string {
 type Job struct {
 	ID        int
 	URL       string
-	Backend   string
+	Backend   pipeline.Backend
 	Status    JobStatus
 	Logs      []string
 	StartedAt time.Time
@@ -59,6 +48,7 @@ const (
 	ViewJobs ViewMode = iota
 	ViewHistory
 	ViewDeleted
+	ViewMP3
 )
 
 type InputMode int
@@ -71,11 +61,11 @@ const (
 
 type Model struct {
 	InputMode InputMode
-	Cfg       AppConfig
+	Cfg       config.AppConfig
 
 	Jobs     []Job
 	Selected int
-	Backend  string
+	Backend  pipeline.Backend
 
 	ViewMode ViewMode
 	Store    *storage.Store
