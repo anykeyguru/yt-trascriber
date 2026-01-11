@@ -17,7 +17,7 @@ func NewYtDl() {
 type YtDl struct{}
 
 func (yt *YtDl) GetTitle(ctx context.Context, opt Options, log LogFn) (string, error) {
-	cmd := exec.CommandContext(ctx, opt.YtDlpPath, "--no-playlist", "--print", "title", opt.URL)
+	cmd := exec.CommandContext(ctx, opt.YtDlpPath, "--no-playlist", "--no-js-runtimes", "--no-warnings", "--print", "title", opt.URL)
 	out, err := cmd.CombinedOutput()
 	if err != nil {
 		log(string(out))

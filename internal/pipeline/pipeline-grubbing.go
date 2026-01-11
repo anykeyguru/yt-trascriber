@@ -98,7 +98,6 @@ func RunGrubTExtFromYTb(ctx context.Context, opt Options, log LogFn) (*Result, e
 	}
 
 	title, err := YtFetcher.GetTitle(ctx, opt, log)
-	//title, err := ytTitle(ctx, opt, log)
 	if err != nil {
 		return nil, err
 	}
