@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/anykeyguru/yt-trascriber/internal/helpers"
+	"github.com/anykeyguru/yt-trascriber/internal/logger"
 	"github.com/anykeyguru/yt-trascriber/internal/pipeline"
 	"github.com/anykeyguru/yt-trascriber/internal/storage"
 	tea "github.com/charmbracelet/bubbletea"
@@ -303,6 +304,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case logMsg:
 		for i := range m.Jobs {
 			if m.Jobs[i].ID == msg.jobID {
+				logger.Inst.Println(msg.line)
 				m.Jobs[i].Logs = append(m.Jobs[i].Logs, msg.line)
 				// удерживаем последние N строк, чтобы память не росла
 				if len(m.Jobs[i].Logs) > 10 {

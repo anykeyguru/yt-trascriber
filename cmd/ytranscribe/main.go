@@ -8,6 +8,7 @@ import (
 	"os"
 
 	"github.com/anykeyguru/yt-trascriber/internal/config"
+	"github.com/anykeyguru/yt-trascriber/internal/logger"
 	"github.com/anykeyguru/yt-trascriber/internal/pipeline"
 	"github.com/anykeyguru/yt-trascriber/internal/tui"
 	tea "github.com/charmbracelet/bubbletea"
@@ -24,6 +25,23 @@ func init() {
 	pipeline.NewYtDl()
 }
 func main() {
+
+	_, closeFn, err := logger.New(logger.Options{
+		File:        "./logs/app.log",
+		LevelPrefix: "[yt-transcriber] ",
+
+		MaxSizeMB:  100,
+		MaxBackups: 10,
+		MaxAgeDays: 14,
+		Compress:   true,
+
+		AlsoStdout: true,
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer closeFn()
+
 	showVersion := flag.Bool("version", false, "Print version and exit")
 	flag.Parse()
 	if *showVersion {

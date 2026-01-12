@@ -20,7 +20,8 @@ type fileConfig struct {
 		} `mapstructure:"whisper"`
 
 		OpenAI struct {
-			Model string `mapstructure:"model"`
+			Model     string `mapstructure:"model"`
+			OpenAIKey string `mapstructure:"token"`
 		} `mapstructure:"openai"`
 	} `mapstructure:"transcriber"`
 }

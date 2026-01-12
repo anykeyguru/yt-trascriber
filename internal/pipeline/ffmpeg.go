@@ -24,6 +24,11 @@ func ffmpegToWav16kMono(ctx context.Context, opt Options, in, out string, log Lo
 
 func ffmpegToMP3Stereo(ctx context.Context, opt Options, in, out string, log LogFn) error {
 	//"-ac 2 -ar 44100 -vn -codec:a libmp3lame -b:a 192k"
+
+	//ffmpeg -i input.wav \
+	//-af "silenceremove=start_periods=1:start_threshold=-40dB:\
+	//stop_periods=1:stop_threshold=-40dB" \
+	//trimmed.wav
 	args := []string{
 		"-y",
 		"-i", in,

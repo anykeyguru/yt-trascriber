@@ -46,6 +46,7 @@ func MustLoad(info AppInfo) AppConfig {
 		WhisperBin:   fc.Transcriber.Whisper.Cli,
 		WhisperModel: fc.Transcriber.Whisper.Model,
 		OpenAIModel:  fc.Transcriber.OpenAI.Model,
+		OpenAIKey:    fc.Transcriber.OpenAI.OpenAIKey,
 		Version:      info.Version,
 		Commit:       info.Commit,
 		Date:         info.Date,

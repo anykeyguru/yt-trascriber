@@ -26,6 +26,18 @@ func whisperCPP(ctx context.Context, opt Options, wavPath, title string, log Log
 
 	// whisper-cli обычно создаёт outPrefix + ".txt" при -otxt
 	args := []string{
+		"--max-len", "200",
+		"--temperature", "0.3",
+
+		"--vad",
+		"--vad-model", "./models/ggml-silero-v6.2.0.bin", // ОБЯЗАТЕЛЬНО
+		"--vad-threshold", "0.5",
+		"--vad-min-speech-duration-ms", "300",
+		"--vad-min-silence-duration-ms", "200",
+		"--vad-speech-pad-ms", "50",
+
+		"--suppress-nst",
+
 		"-m", opt.WhisperModel,
 		"-f", wavPath,
 		"-of", outPrefix,
