@@ -42,7 +42,7 @@ func InitialModel(cfg config.AppConfig) Model {
 		Backend:  pipeline.BackendWhisperCPP,
 		Store:    store,
 		History:  history,
-		ViewMode: ViewJobs,
+		ViewMode: ViewMP3,
 		jobCh:    make(map[int]chan tea.Msg),
 	}
 }

@@ -22,6 +22,9 @@ BUILD_CMD := CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 \
 build: tidy
 	$(BUILD_CMD) -o $(APPNAME) ./cmd/ytranscribe
 
+build-linux: tidy
+	$(BUILD_CMD_LINUX) -o $(APPNAME) ./cmd/ytranscribe
+
 tidy:
 	go mod tidy
 
