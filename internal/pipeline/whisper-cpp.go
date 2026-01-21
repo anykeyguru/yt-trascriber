@@ -8,6 +8,10 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strconv"
+	"time"
+
+	sanitize "github.com/anykeyguru/yt-trascriber/internal/sanitizer"
 )
 
 func whisperCPP(ctx context.Context, opt Options, wavPath, title string, log LogFn) (string, error) {
@@ -18,10 +22,11 @@ func whisperCPP(ctx context.Context, opt Options, wavPath, title string, log Log
 		return "", errors.New("whisper.cpp: model path is empty")
 	}
 
-	base := CreateFileNameForSave(title)
+	base := sanitize.SanitizeString(title)
 	if base == "" {
 		base = "transcript"
 	}
+	base += "_" + strconv.FormatInt(time.Now().UnixNano(), 10)
 	outPrefix := filepath.Join(opt.OutDir, base)
 
 	// whisper-cli обычно создаёт outPrefix + ".txt" при -otxt

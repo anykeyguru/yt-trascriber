@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/anykeyguru/yt-trascriber/internal/helpers"
+	"github.com/google/uuid"
 )
 
 func RunGrubMP3(ctx context.Context, opt Options, log LogFn) (*Result, error) {
@@ -42,8 +43,11 @@ func RunGrubMP3(ctx context.Context, opt Options, log LogFn) (*Result, error) {
 	if err := os.MkdirAll(opt.OutDir, 0o755); err != nil {
 		return nil, err
 	}
-
-	tmpDir, err := os.MkdirTemp("", "ytranscribe-*")
+	if err := os.MkdirAll(BaseTempDir, 0o755); err != nil {
+		return nil, err
+	}
+	
+	tmpDir, err := os.MkdirTemp(BaseTempDir, "ytranscribe-*")
 	if err != nil {
 		return nil, err
 	}
@@ -69,7 +73,7 @@ func RunGrubMP3(ctx context.Context, opt Options, log LogFn) (*Result, error) {
 	}
 	log("audio downloaded: " + audioPath)
 
-	mp3Path := filepath.Join("./audio", "audio.mp3")
+	mp3Path := filepath.Join("./audio", "audio"+uuid.New().String()[:8]+".mp3")
 	if err := ffmpegToMP3Stereo(ctx, opt, audioPath, mp3Path, log); err != nil {
 		return nil, err
 	}

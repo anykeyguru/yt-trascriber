@@ -9,6 +9,7 @@ import (
 	"github.com/anykeyguru/yt-trascriber/internal/helpers"
 	"github.com/anykeyguru/yt-trascriber/internal/logger"
 	"github.com/anykeyguru/yt-trascriber/internal/pipeline"
+	sanitize "github.com/anykeyguru/yt-trascriber/internal/sanitizer"
 	"github.com/anykeyguru/yt-trascriber/internal/storage"
 	tea "github.com/charmbracelet/bubbletea"
 )
@@ -79,6 +80,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				}
 
 				m.Jobs = append(m.Jobs, job)
+				m.Selected = safeIndex(m.Selected, len(m.Jobs))
 
 				m.InputURL = ""
 				m.InputMode = InputNone
@@ -102,7 +104,12 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					m.Message = "Path is empty"
 					return m, nil
 				}
-				t := m.History[m.Selected]
+				idx := safeIndex(m.Selected, len(m.History))
+				if idx == -1 {
+					m.Message = "No records"
+					return m, nil
+				}
+				t := m.History[idx]
 
 				if err := os.MkdirAll(filepath.Dir(m.InputPath), 0755); err != nil {
 					m.Message = "Create dir failed: " + err.Error()
@@ -192,9 +199,6 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 			if m.ViewMode == ViewJobs {
 				m.ViewMode = ViewHistory
-				if m.Selected >= len(m.History) {
-					m.Selected = max(len(m.History)-1, 0)
-				}
 			} else {
 				m.ViewMode = ViewJobs
 				if m.Selected >= len(m.Jobs) {
@@ -210,9 +214,6 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 			if m.ViewMode == ViewJobs {
 				m.ViewMode = ViewMP3
-				if m.Selected >= len(m.History) {
-					m.Selected = max(len(m.History)-1, 0)
-				}
 			} else {
 				m.ViewMode = ViewJobs
 				if m.Selected >= len(m.Jobs) {
@@ -222,11 +223,15 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		case "s":
 			if m.ViewMode == ViewHistory && len(m.History) > 0 {
-				t := m.History[m.Selected]
+				idx := safeIndex(m.Selected, len(m.History))
+				if idx == -1 {
+					return m, nil
+				}
+				t := m.History[idx]
 
 				m.InputPath = filepath.Join(
 					m.Cfg.OutDir,
-					pipeline.CreateFileNameForSave(t.Title)+".txt",
+					sanitize.SanitizeString(t.Title)+".txt",
 				)
 
 				m.InputMode = InputSavePath
@@ -235,7 +240,11 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		case "d":
 			if m.ViewMode == ViewHistory && len(m.History) > 0 {
-				t := m.History[m.Selected]
+				idx := safeIndex(m.Selected, len(m.History))
+				if idx == -1 {
+					return m, nil
+				}
+				t := m.History[idx]
 
 				m.ViewMode = ViewDeleted
 				m.Message = fmt.Sprintf("Record %d will be deleted…", t.ID)
@@ -246,7 +255,11 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "enter":
 			// transcribing
 			if m.ViewMode == ViewJobs && len(m.Jobs) > 0 {
-				job := &m.Jobs[m.Selected]
+				idx := safeIndex(m.Selected, len(m.Jobs))
+				if idx == -1 {
+					return m, nil
+				}
+				job := &m.Jobs[idx]
 
 				if job.Status == Idle {
 					job.Status = Running
@@ -266,7 +279,11 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 			// mp3 grub
 			if m.ViewMode == ViewMP3 && len(m.Jobs) > 0 {
-				job := &m.Jobs[m.Selected]
+				idx := safeIndex(m.Selected, len(m.Jobs))
+				if idx == -1 {
+					return m, nil
+				}
+				job := &m.Jobs[idx]
 
 				if job.Status == Idle {
 					job.Status = Running
@@ -294,10 +311,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		m.ViewMode = ViewHistory
 		m.History, _ = m.Store.List()
-
-		if m.Selected >= len(m.History) {
-			m.Selected = max(len(m.History)-1, 0)
-		}
+		m.Selected = safeIndex(m.Selected, len(m.History))
 
 		return m, nil
 
@@ -307,8 +321,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				logger.Inst.Println(msg.line)
 				m.Jobs[i].Logs = append(m.Jobs[i].Logs, msg.line)
 				// удерживаем последние N строк, чтобы память не росла
-				if len(m.Jobs[i].Logs) > 10 {
-					m.Jobs[i].Logs = m.Jobs[i].Logs[len(m.Jobs[i].Logs)-10:]
+				if len(m.Jobs[i].Logs) > 3 {
+					m.Jobs[i].Logs = m.Jobs[i].Logs[len(m.Jobs[i].Logs)-3:]
 				}
 				break
 			}
@@ -331,9 +345,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					m.Jobs[i].Logs = append(m.Jobs[i].Logs, "done: "+msg.title)
 					// пока просто положим текст в logs хвостом (или добавь поле Job.Text)
 					if strings.TrimSpace(msg.text) != "" {
-						m.Jobs[i].Logs = append(m.Jobs[i].Logs, "----- transcript (first 10 lines) -----")
+						m.Jobs[i].Logs = append(m.Jobs[i].Logs, "----- transcript (first 5 lines) -----")
 						lines := strings.Split(msg.text, "\n")
-						for k := 0; k < len(lines) && k < 10; k++ {
+						for k := 0; k < len(lines) && k < 5; k++ {
 							m.Jobs[i].Logs = append(m.Jobs[i].Logs, lines[k])
 						}
 					}
@@ -347,6 +361,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					m.Message = "Save failed: " + err.Error()
 				}
 				m.History, _ = m.Store.List()
+				m.Selected = safeIndex(m.Selected, len(m.History))
 				break
 			}
 		}
@@ -357,4 +372,17 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	}
 
 	return m, nil
+}
+
+func safeIndex(selected, length int) int {
+	if length == 0 {
+		return -1
+	}
+	if selected < 0 {
+		return 0
+	}
+	if selected >= length {
+		return length - 1
+	}
+	return selected
 }

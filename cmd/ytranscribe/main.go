@@ -35,7 +35,7 @@ func main() {
 		MaxAgeDays: 14,
 		Compress:   true,
 
-		AlsoStdout: true,
+		AlsoStdout: false,
 	})
 	if err != nil {
 		log.Fatal(err)

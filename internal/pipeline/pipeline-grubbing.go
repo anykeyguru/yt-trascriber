@@ -22,6 +22,7 @@ const (
 	defaultYtDlpPath          = "yt-dlp"
 	defaultFfmpegPath         = "ffmpeg"
 	DefaultOutDir             = "./out"
+	BaseTempDir               = "./tmp"
 )
 
 func (b Backend) String() string {
@@ -86,8 +87,11 @@ func RunGrubTExtFromYTb(ctx context.Context, opt Options, log LogFn) (*Result, e
 	if err := os.MkdirAll(opt.OutDir, 0o755); err != nil {
 		return nil, err
 	}
+	if err := os.MkdirAll(BaseTempDir, 0o755); err != nil {
+		return nil, err
+	}
 
-	tmpDir, err := os.MkdirTemp("", "ytranscribe-*")
+	tmpDir, err := os.MkdirTemp(BaseTempDir, "ytranscribe-*")
 	if err != nil {
 		return nil, err
 	}

@@ -24,7 +24,7 @@ func (yt *YtDl) GetTitle(ctx context.Context, opt Options, log LogFn) (string, e
 		return "", fmt.Errorf("yt-dlp title: %w", err)
 	}
 
-	return Sanitize(string(out)), nil
+	return string(out), nil
 }
 
 func (yt *YtDl) FetchAudio(ctx context.Context, opt Options, tmpDir string, log LogFn) (string, error) {
